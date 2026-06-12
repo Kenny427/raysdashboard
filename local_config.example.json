@@ -1,0 +1,8 @@
+{
+  "_comment": "All keys optional. copilot_api_export_script defaults to the bundled scripts/flipping_copilot_api_export.py",
+  "dashboard_title": "My Flip Dashboard",
+  "blocklist_profile": "Dashboard blocklist",
+  "extra_csv_dirs": [],
+  "copilot_ui_export_script": "",
+  "copilot_api_export_script": ""
+}

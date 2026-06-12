@@ -1,0 +1,13 @@
+{
+  "active_accounts": ["my main", "my alt"],
+  "baseline_at": "2026-01-01T00:00:00.000Z",
+  "account_baselines": {
+    "my main": 100000000,
+    "my alt": 50000000
+  },
+  "account_adjustments": {},
+  "notes": "",
+  "monthly_goal": 1000000000,
+  "goal_days": 31,
+  "owed": 0
+}
