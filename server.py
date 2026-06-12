@@ -1186,6 +1186,30 @@ def compute_period_stats(rows: list[dict], bounds: tuple[dt.datetime, dt.datetim
             "duration_h": r.get("_dur_h"),
             "last_sell": iso(r.get("_sell")),
         })
+    # In-progress sales: SELLING rows with partial fills. Their _profit is the
+    # realized profit on the sold portion (straight from Copilot's API), so it
+    # belongs in the feed — clearly flagged with sold/total quantities.
+    for r in selling_partial:
+        p = r.get("_profit", 0)
+        recent_transactions.append({
+            "item": r.get("Item", ""),
+            "icon_url": r.get("icon_url"),
+            "profit": p,
+            "result": "win" if p >= 0 else "loss",
+            "in_progress": True,
+            "sold_qty": r.get("_sold"),
+            "bought_qty": r.get("_bought"),
+            "bought": r.get("Bought"),
+            "sold": r.get("Sold"),
+            "avg_buy": r.get("_avg_buy"),
+            "avg_sell": r.get("_avg_sell"),
+            "tax": r.get("_tax"),
+            "profit_ea": r.get("_profit_ea"),
+            "duration_h": r.get("_dur_h"),
+            "last_sell": iso(r.get("_sell")),
+        })
+    recent_transactions.sort(key=lambda x: x.get("last_sell") or "", reverse=True)
+    recent_transactions = recent_transactions[:100]
     return {
         "n": len(finished),
         "profit": total_profit,

@@ -276,13 +276,20 @@ def flip_to_row(
     # Avg buy = spent / openedQty
     avg_buy = spent // opened_qty if opened_qty else 0
 
-    # Avg sell = (spent + profit + tax) / closedQty
-    # This is the only formula that matches manual CSV (83%+ of rows match exactly).
-    # The received field is NOT used here because the exact formula differs from
-    # Copilot's internal formula. Using (spent + profit + tax) / cq is the correct
-    # approach derived from: profit = received - spent - tax  →  received = profit + spent + tax.
+    # Avg sell for FINISHED = (spent + profit + tax) / closedQty — matches the
+    # manual CSV (derived from profit = received - spent - tax, and for finished
+    # flips spent covers exactly the closed quantity).
+    # For partial (SELLING) rows that derivation breaks: `spent` covers ALL
+    # bought units, not just the sold ones, which wildly inflates avg sell.
+    # Use Copilot's own FlipV2.getAvgSellPrice formula instead:
+    # (receivedPostTax + taxPaid) / closedQuantity.
     if closed_qty > 0:
-        avg_sell = (spent + profit_out + tax_out) // closed_qty
+        if status == 'FINISHED':
+            avg_sell = (spent + profit_out + tax_out) // closed_qty
+        elif received:
+            avg_sell = (received + tax_out) // closed_qty
+        else:
+            avg_sell = 0
     else:
         avg_sell = 0
 
