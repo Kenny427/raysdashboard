@@ -65,6 +65,36 @@ Your history is cached locally as `flips.csv` in the dashboard folder (gitignore
 
 Both files are gitignored — your money data never leaves your machine.
 
+### Optional: AI Market Insight
+
+The **Market Insight** tab works out of the box with no setup — it ranks the day's
+movers and trends with a deterministic, no-key engine. If you want it to also write
+short natural-language summaries, you can plug in **your own** LLM API key (it's never
+bundled, and the key stays server-side on your PC):
+
+1. In the **Market Insight** tab, open its settings and paste a key, **or** add these
+   keys to `local_config.json`:
+
+   ```json
+   {
+     "insight_llm_provider": "openrouter",
+     "insight_llm_model": "anthropic/claude-sonnet-4.5",
+     "insight_llm_key": "your-api-key-here"
+   }
+   ```
+
+   - `insight_llm_provider` — `openrouter` or `anthropic`.
+   - `insight_llm_model` — e.g. `anthropic/claude-sonnet-4.5` for OpenRouter, or a
+     model id like `claude-sonnet-4-5` for Anthropic direct. Leave blank for a sensible default.
+   - Get a key from [OpenRouter](https://openrouter.ai/) or the
+     [Anthropic Console](https://console.anthropic.com/).
+
+2. Alternatively, set an `ANTHROPIC_API_KEY` environment variable and it's picked up automatically.
+
+The key lives only in your gitignored `local_config.json` (or the environment) — it's
+never committed and never sent anywhere except the provider you chose. Leave it unset
+and the tab simply runs in its free, deterministic mode.
+
 ## Notes
 
 - The server binds to `127.0.0.1` only; nothing is exposed to your network.
