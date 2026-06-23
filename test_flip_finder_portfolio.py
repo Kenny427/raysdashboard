@@ -49,6 +49,9 @@ def _patch_market(monkeypatch, now_ts=None):
     monkeypatch.setattr(server, "compute_history_stats", lambda *a, **k: {})
     monkeypatch.setattr(server, "load_watchlist", lambda: set())
     monkeypatch.setattr(server, "maybe_start_history_bootstrap", lambda *a, **k: None)
+    # isolate from any live calibration.json on the dev machine, and from signal logging
+    monkeypatch.setattr(server, "load_calibration", lambda: {})
+    monkeypatch.setattr(server, "log_finder_signals", lambda *a, **k: 0)
 
 
 def test_flip_finder_metrics_and_personal_history(monkeypatch):
