@@ -12,27 +12,27 @@ A local, self-hosted dashboard for Old School RuneScape Grand Exchange flipping.
 
 ![Dashboard](docs/dashboard.png)
 
-**Portfolio** — track buys and sells with live unrealized/realized P/L after tax:
+**Stats** — all-time analytics: profit over time, win rate, best items/hours and tax/turnover highlights:
 
-![Portfolio](docs/portfolio.png)
+![Stats](docs/stats.png)
 
-**Item research page** — interactive price/volume chart, live margins, and your own flip record:
+**Item research page** — interactive buy/sell price & volume chart, live margins, and your own flip record:
 
 ![Item page](docs/item-page.png)
 
-**Flip Finder** — market-wide scan ranked by expected GP/day, with z-score signals and 7-day sparklines:
+**Bankroll** — net worth across accounts plus a goal tracker with ETA, pace and a projection chart:
 
-![Flip Finder](docs/flip-finder.png)
+![Bankroll](docs/bankroll.png)
 
 ## Features
 
-- **Flip Finder** — live market-wide scan of ~4,000 items ranked by **expected GP/day per GE slot**, with post-tax margins, ROI, volumes, fill-time estimates, suggested buy/sell offers, and 0–100 confidence scores. Builds its own local 7-day price history to surface **mean-reversion signals** (dip-buy / falling-knife / overheated via z-score), risk flags (dumps, spikes, manipulation traps), and inline sparklines. Presets include Recommended (by EV), Proven (items you've flipped profitably before), Dip buys, High volume, Big ticket, Low risk, F2P and your Watchlist. Star items to get **dip and margin alerts** with browser notifications.
-- **Portfolio** — track your buys and sells with live unrealized/realized P/L after GE tax, target prices, and a completed-flips history.
-- **Dashboard** — realized profit from your Copilot flips by day/week/month, GP/hour, goal pacing, recent transactions, live unrealized estimate from your open offers — auto-synced from Copilot's API while you trade.
-- **Bankroll** — per-account baselines, deposits/withdrawals, transfers, and net-worth tracking.
-- **Item pages** — interactive price/volume charts, live margins, 7-day range/average, and your own flip record (profit, win rate, best sell hours) for any tradeable item.
+- **Dashboard** — realized profit from your Copilot flips by day/week/month, GP/hour, goal pacing, recent transactions, best/worst items, and a live unrealized estimate from your open offers — auto-synced from Copilot's API while you trade.
+- **Stats** — all-time and per-period analytics: a profit-over-time chart, win rate, best items/hours/weekdays, GE tax paid, turnover, biggest flips, and per-account slot efficiency.
+- **Bankroll** — per-account GP baselines, deposits/withdrawals, transfers, net-worth tracking, and a headline goal tracker with ETA, pace and a projection chart.
+- **Item research pages** — interactive buy/sell price and volume charts, live post-tax margins, 7-day range/average, and your own flip record (profit, win rate, best sell hours) for any tradeable item.
+- **Market Insight** — what's moving the OSRS market right now from game updates, community threads and raw price swings, so you can sidestep items too volatile to flip safely. Optional AI summaries with your own LLM key (see below).
 - **Blocklist** — review and edit your Flipping Copilot item blocklist from the browser.
-- **Stats** — all-time and per-period analytics: best items, hours, value tiers, slot efficiency.
+- **Accounts** — choose which accounts are active and manage their per-account settings.
 
 ## Setup
 
@@ -47,7 +47,7 @@ A local, self-hosted dashboard for Old School RuneScape Grand Exchange flipping.
 
 3. **Open** http://127.0.0.1:8791 in your browser.
 
-That's it — live market data (Flip Finder, item pages, portfolio) works immediately.
+That's it — live market data (item research pages and Market Insight) works immediately.
 
 ### Your flip history (automatic)
 
