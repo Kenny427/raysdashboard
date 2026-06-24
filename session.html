@@ -259,14 +259,14 @@ body{
   <!-- hero -->
   <div class="hero">
     <div class="card heroMain" id="heroMain">
-      <div class="lbl">Session P/L <span class="ctx" id="heroCtx"></span></div>
+      <div class="lbl">Profit today <span class="ctx" id="heroCtx"></span></div>
       <div class="bigNum" id="bigNum">0<span class="gp">GP</span></div>
       <div class="heroSub">
         <span class="pace" id="pace">—</span>
         <div class="heroStat"><span class="k">GP / hour</span><span class="v" id="gphTxt">—</span></div>
         <div class="heroStat"><span class="k">vs your usual</span><span class="v" id="vsTxt">—</span></div>
         <div class="heroStat"><span class="k">Best flip</span><span class="v" id="bestTxt">—</span></div>
-        <div class="heroStat"><span class="k">Realized today</span><span class="v" id="todayTxt">—</span></div>
+        <div class="heroStat"><span class="k">Session P/L</span><span class="v" id="sessTxt">—</span></div>
       </div>
     </div>
     <div class="card gaugeCard">
@@ -318,9 +318,9 @@ body{
           <div class="pc"><b id="goalPct">0%</b></div>
         </div>
         <div class="goalInfo">
-          <div class="t">Earned today</div>
+          <div class="t" id="goalLbl">Goal progress</div>
           <div class="big" id="goalToday">—</div>
-          <div class="sub">of <b id="goalTarget">—</b> daily target · <span id="goalGap">—</span></div>
+          <div class="sub">of <b id="goalTarget">—</b> · <span id="goalGap">—</span></div>
           <div class="eta" id="goalEta">—</div>
           <div class="proj" id="goalProj"></div>
         </div>
@@ -359,6 +359,7 @@ function pad2(n){return String(n).padStart(2,'0')}
 function parseT(s){if(!s)return null;let d=new Date(s);return isNaN(d)?null:d}
 function ago(ms){let s=Math.max(0,Math.round(ms/1000));if(s<60)return s+'s ago';let m=Math.floor(s/60);if(m<60)return m+'m ago';let h=Math.floor(m/60);return h+'h '+(m%60)+'m ago'}
 function fmtDur(h){if(!isFinite(h)||h<0)return '—';let mins=Math.round(h*60);if(mins<1)return '<1m';if(mins<60)return mins+'m';let hh=Math.floor(mins/60),mm=mins%60;if(hh>=24){let d=Math.floor(hh/24);return d+'d '+(hh%24)+'h'}return hh+'h '+mm+'m'}
+function fmtDays(d){d=Math.abs(Number(d)||0);if(d>=365)return (d/365).toFixed(1)+'y';if(d>=1)return Math.round(d)+'d';return Math.max(1,Math.round(d*24))+'h'}
 function num(x){let n=Number(x);return isFinite(n)?n:0}
 function iconFor(it){return it&&it.icon_url?`<img src="${esc(it.icon_url)}" onerror="this.style.display='none'">`:`<div class="ico">${esc((((it&&it.item)||'?')[0]||'?')).toUpperCase()}</div>`}
 function alLoadSet(k){try{return new Set(JSON.parse(localStorage.getItem(k)||'[]'))}catch(e){return new Set()}}
@@ -521,7 +522,8 @@ function apply(){
   const lr=DATA.live_rate||{},le=DATA.live_unrealized_estimate||{},today=(DATA.active_periods&&DATA.active_periods.today)||{};
   const tx=DATA.recent_transactions||today.recent_transactions||[];
   let sessProfit=(lr.session_since_profit!=null)?lr.session_since_profit:(today.copilot_profit!=null?today.copilot_profit:today.profit||0);
-  $('heroCtx').textContent=(lr.session_since_profit!=null)?'· since reset':'· today';
+  let todayP=today.copilot_profit!=null?today.copilot_profit:(today.profit||0);
+  $('heroCtx').textContent='';
   // session flips
   let sessFin=tx.filter(t=>!t.in_progress&&inWin(t));
   let flips=sessFin.length,wins=sessFin.filter(t=>t.profit>=0).length;
@@ -538,9 +540,9 @@ function apply(){
   }
   seen=new Set([...seen].filter(k=>liveKeys.has(k)));
   // headline
-  if(firstLoad){dispProfit=sessProfit;setBig(sessProfit);}
-  else if(sessProfit!==targetProfit){animProfit(sessProfit);}
-  targetProfit=sessProfit;
+  if(firstLoad){dispProfit=todayP;setBig(todayP);}
+  else if(todayP!==targetProfit){animProfit(todayP);}
+  targetProfit=todayP;
   $('heroMain').classList.remove('win','loss');
   // gp/hr + pace
   let gph=(lr.session_since_per_hour!=null)?lr.session_since_per_hour:(lr.smoothed_profit_per_hour||0);
@@ -551,8 +553,8 @@ function apply(){
   let pe=$('pace');pe.className='pace '+(pstate||'');
   pe.textContent=pstate==='busy'?'▲ Above pace':pstate==='slow'?'▼ Below pace':pstate==='normal'?'On pace':'—';
   $('bestTxt').textContent=sessBest!=null?fmtSigned(sessBest):'—';
-  let todayP=today.copilot_profit!=null?today.copilot_profit:(today.profit||0);
-  $('todayTxt').textContent=fmtSigned(todayP);
+  $('sessTxt').textContent=fmtSigned(sessProfit);
+  $('sessTxt').style.color=sessProfit<0?'var(--red)':'var(--text)';
   // gauge
   let gmax=Math.max(baseline*2.2,gph*1.15,500000),r=Math.max(0,Math.min(1,gph/gmax));
   $('needle').style.transform='rotate('+(-90+r*180)+'deg)';
@@ -589,27 +591,28 @@ function apply(){
   let sell=le.selling_count||0,buy=le.buying_count||0;
   $('slotsTxt').textContent=(sell+buy+(le.bought_count||0));
   $('slotsChip').title=sell+' selling · '+buy+' buying · '+(le.bought_count||0)+' bought (unlisted)';
-  // goal ring
-  let dt=dailyTarget(),gp2=dt>0?Math.max(0,todayP/dt):0,gpShow=Math.min(1,gp2);
-  $('ringFill').style.strokeDashoffset=(238.76*(1-gpShow)).toFixed(1);
-  $('ringFill').style.stroke=gp2>=1?'var(--gold)':gp2>=.6?'var(--green)':gp2>=.3?'var(--amber)':'var(--red)';
-  $('goalPct').textContent=Math.round(gp2*100)+'%';
-  $('goalToday').textContent=fmtSigned(todayP);$('goalToday').classList.toggle('neg',todayP<0);
-  $('goalTarget').textContent=fmtAbs(dt);
-  let gap=dt-todayP;$('goalGap').innerHTML=gap>0?('<b>'+fmtAbs(gap)+'</b> to go'):'target hit';
-  // daily-goal ETA at current pace
-  if(gap<=0){let over=todayP-dt;$('goalEta').innerHTML='🎯 target hit'+(over>0?' · <b>+'+fmtAbs(over)+'</b> over':'');}
-  else if(gph>0){let h=gap/gph;$('goalEta').innerHTML='at this pace · <b>'+fmtDur(h)+'</b> to target';}
-  else{$('goalEta').textContent='at this pace · target not advancing';}
-  // projected end-of-day total — run-rate: today's realized profit scaled to a full
-  // day, so a short hot streak doesn't blow it up like extrapolating current pace did.
-  let startDay=new Date();startDay.setHours(0,0,0,0);
-  let frac=Math.min(1,(Date.now()-startDay.getTime())/86400000);
-  if(frac>0.05){$('goalProj').innerHTML='Projected <b>'+fmtSigned(todayP/frac)+'</b> today';
-    $('goalProj').title="Run-rate: today's earnings scaled to a full day at the same average pace.";}
-  else $('goalProj').textContent='Projected today · building…';
-  // daily-target-hit celebration (once)
-  if(dt>0&&todayP>=dt){if(!firstLoad&&!goalHitFired){toast('Daily target hit','+'+fmtAbs(todayP),'gold');sfx('milestone');pulse(true);glow('gold');}goalHitFired=true;}
+  // big-goal tracker — the long-game counterpart to today's profit up top.
+  let gt=DATA.goal_tracker||{},gpct=Math.max(0,Math.min(100,num(gt.pct)));
+  $('ringFill').style.strokeDashoffset=(238.76*(1-gpct/100)).toFixed(1);
+  $('ringFill').style.stroke=gt.reached?'var(--gold)':gpct>=66?'var(--green)':gpct>=33?'var(--cyan)':'var(--amber)';
+  $('goalPct').textContent=(gpct<10?gpct.toFixed(1):Math.round(gpct))+'%';
+  $('goalLbl').textContent=(num(gt.target)?fmtAbs(gt.target):'')+' profit goal';
+  $('goalToday').textContent=fmtAbs(num(gt.current));$('goalToday').classList.remove('neg');
+  $('goalTarget').textContent=fmtAbs(num(gt.target));
+  $('goalGap').innerHTML=gt.reached?'reached 🎉':('<b>'+fmtAbs(num(gt.remaining))+'</b> to go');
+  // ETA in days at your recent pace
+  if(gt.reached){$('goalEta').innerHTML='🎯 goal reached';}
+  else if(gt.eta&&gt.eta.days!=null){$('goalEta').innerHTML='≈ <b>'+fmtDays(gt.eta.days)+'</b> to goal · '+esc(gt.chosen_pace_label||'recent pace');}
+  else{$('goalEta').textContent='pace too low to project';}
+  // acceleration vs lifetime pace + ahead/behind
+  let ap=gt.accel_pct,ah=gt.ahead_days,projBits=[];
+  if(ap!=null)projBits.push((ap>=0?'▲ ':'▼ ')+Math.abs(ap).toFixed(0)+'% vs lifetime');
+  if(ah!=null&&Math.abs(ah)>=0.5)projBits.push('<b>'+fmtDays(ah)+'</b> '+(ah>=0?'ahead':'behind'));
+  $('goalProj').innerHTML=projBits.join(' · ');
+  $('goalProj').title='Pace = your '+esc(gt.chosen_pace_label||'recent')+' ('+fmtAbs(num(gt.chosen_pace))+'/day). Acceleration compares it to your lifetime pace.';
+  // daily-target-hit celebration (once) — still fun even though the card now tracks the big goal
+  let dailyTgt=dailyTarget();
+  if(dailyTgt>0&&todayP>=dailyTgt){if(!firstLoad&&!goalHitFired){toast('Daily target hit','+'+fmtAbs(todayP),'gold');sfx('milestone');pulse(true);glow('gold');}goalHitFired=true;}
   // attention strip — only the things worth acting on this session
   renderAttention();
   // feed
@@ -719,7 +722,7 @@ document.addEventListener('click',e=>{if(ATTN_OPEN){let pop=$('attnPop'),strip=$
 $('resetBtn').onclick=()=>{
   anchorMs=Date.now();try{localStorage.setItem('gpSessionAnchor',new Date(anchorMs).toISOString())}catch(e){}
   seen=new Set();streak=0;bestStreak=0;peakRate=0;sessBest=null;sessWorst=null;milestones=new Set();lastHighMs=0;goalHitFired=false;firstLoad=true;
-  dispProfit=0;targetProfit=0;setBig(0);toast('Session','reset','up');poll();
+  $('sessTxt').textContent='+0';$('sessTxt').style.color='var(--text)';toast('Session','reset','up');poll();
 };
 addEventListener('keydown',e=>{if(e.key==='m'||e.key==='M')$('soundBtn').click();if(e.key==='r'||e.key==='R')$('resetBtn').click();});
 addEventListener('click',()=>audio(),{once:true});
